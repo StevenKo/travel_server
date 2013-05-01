@@ -5,7 +5,8 @@ gem 'rails', '3.2.11'
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'sqlite3'
+gem 'mysql2'
+gem 'yaml_db'
 
 
 # Gems used only for assets and not required
@@ -21,6 +22,33 @@ group :assets do
 end
 
 gem 'jquery-rails'
+
+# api
+gem 'rabl'
+
+# 爬蟲
+gem 'nokogiri'
+
+group :test, :development do
+  gem "rspec"
+  gem "rspec-rails"
+end
+
+
+gem 'capistrano'
+gem 'capistrano-ext'
+
+# cron table
+gem 'whenever', :require => false
+
+#分頁
+gem 'will_paginate'
+
+gem 'sidekiq'
+gem 'sinatra', require: false
+gem 'slim'
+
+gem 'zhconv'
 
 # To use ActiveModel has_secure_password
 # gem 'bcrypt-ruby', '~> 3.0.0'
