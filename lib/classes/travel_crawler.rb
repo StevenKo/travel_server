@@ -3,13 +3,19 @@ class TravelCrawler
   include Crawler
 
   def crawl_nations state_id
-    nodes = @page_html.css("#Main_divMap a.map_site_s2,#Main_divMap a.map_site_s3,#Main_divMap a.map_site_s4")
+    nodes = nil
+    if state_id == 1
+      nodes = @page_html.css("#Main_divMap a")
+    else
+      nodes = @page_html.css("#Main_divMap a.map_site_s2,#Main_divMap a.map_site_s3,#Main_divMap a.map_site_s4,#Main_divMap a.map_site_s5")
+    end
     nodes.each do |node|
       nation = Nation.new
       nation.name = ZhConv.convert("zh-tw", node.text)
       nation.name_cn = node.text
       nation.link = node[:href]
       next if(nation.link == "/tourism-d110000-china.html")
+      next if Nation.find_by_link(node[:href])
       nation.state_id = state_id
       nation.save
       puts node.text
@@ -17,14 +23,26 @@ class TravelCrawler
   end
 
   def crawl_nation_area nation_id
+    
+    raise "maybe link error" if @page_html.children.size == 1
+
     nodes = @page_html.css("map area")
     nodes.each do |node|
       if(node[:href].present?)
         a = Area.new
+        next if Area.find_by_link(node[:href])
         a.link = node[:href]
         a.nation_id = nation_id
         a.save
       end
+    end
+
+    if nodes.blank?
+      nation = Nation.find(nation_id)
+      a = Area.new
+      a.link = nation.link
+      a.nation_id = nation_id
+      a.save
     end
   end
 
@@ -38,8 +56,8 @@ class TravelCrawler
     a.pic = pic
     a.note_link = note_link
     a.site_link = site_link
-    a.name = ZhConv.convert("zh-tw", title)
     a.name_cn = title
+    a.name = ZhConv.convert("zh-tw", @page_html.css(".main-title").text.strip)
     a.save
   end
 
@@ -53,6 +71,7 @@ class TravelCrawler
       intro_nodes.each do |intro|
          a = AreaIntro.new
          a.title = intro.css("a").text
+         next if a.title.index("此分类创建攻略")
 
          finds = AreaIntro.where("area_id = #{area_id} and title = ?",a.title)
          next unless finds.blank?
@@ -92,14 +111,15 @@ class TravelCrawler
 
       intro = c1.page_html.css("#Main_divSightIntroduce").to_html
 
-      site = Site.create(:name => name, :pic => pic, :rank => rank, :info => info, :intro => intro, :area_id => area_id)
+      area = Area.select("id, nation_id").find(area_id)
+      nation = Nation.select("id, nation_group_id").find(area.nation_id)
+
+      site = Site.create(:name => name, :pic => pic, :rank => rank, :info => info, :intro => intro, :area_id => area_id, :nation_id => nation.id, :nation_group_id => nation.nation_group_id)
     end
 
     link = @page_html.css(".desNavigation a").last
-    if link.text.index(">>") != nil
-      c = TravelCrawler.new
-      c.fetch link[:href]
-      c.crawl_area_sites area_id
+    if (link.present? && link.text.index(">>") != nil)
+      CrawlAreaSiteWorker.perform_async(area_id,link[:href])
     end
   end
 
@@ -118,6 +138,9 @@ class TravelCrawler
       c1 = TravelCrawler.new
       c1.fetch node.css("h3 a")[0][:href]
       content = c1.page_html.css("#journal-content").to_html
+      
+      area = Area.select("id, nation_id").find(area_id)
+      nation = Nation.select("id, nation_group_id").find(area.nation_id)
 
       note = Note.new
       note.title = title
@@ -128,18 +151,17 @@ class TravelCrawler
       note.content = content
       note.area_id = area_id
       note.order_best = order
+      note.nation_id = area.nation_id
+      note.nation_group_id = nation.nation_group_id
       note.link = link
       order += 1
       note.save
-      puts @page_url
 
     end
 
     a_node = @page_html.css(".new-paging em.current")[0]
     if a_node.next.name == "a"
-      c1 = TravelCrawler.new
-      c1.fetch a_node.next[:href]
-      c1.crawl_area_notes area_id,order
+      CrawlAreaNoteWorker.perform_async(area_id,order,a_node.next[:href])
     end
 
   end
@@ -156,10 +178,151 @@ class TravelCrawler
     end
     a_node = @page_html.css(".new-paging em.current")[0]
     if a_node.next.name == "a"
-      c1 = TravelCrawler.new
-      c1.fetch a_node.next[:href]
-      c1.crawl_area_notes_order_new area_id,order
+      CrawlNoteOrderNewWorker.perform_async(area_id,order,a_node.next[:href])
     end
+  end
+
+  def crawl_nation_group
+
+    ng = NationGroup.new
+    ng.name = "南极"
+    ng.state_id = 8
+    ng.save
+    
+    nodes = @page_html.css(".item-china em a")
+    nodes.each do |node|
+      ng = NationGroup.new
+      ng.name = node.text.strip
+      ng.state_id = 1
+      ng.save
+    end
+
+    nodes = @page_html.css(".item-asia em a")
+    nodes.each do |node|
+      ng = NationGroup.new
+      ng.name = node.text.strip
+      ng.state_id = 2
+      ng.save
+    end
+
+    nodes = @page_html.css(".item-europe em a")
+    nodes.each do |node|
+      ng = NationGroup.new
+      ng.name = node.text.strip
+      ng.state_id = 3
+      ng.save
+    end
+
+    ng = NationGroup.new
+    ng.name = "澳大利亚"
+    ng.state_id = 4
+    ng.save
+
+    ng = NationGroup.new
+    ng.name = "新西兰及南太平洋岛国"
+    ng.state_id = 4
+    ng.save
+
+    ng = NationGroup.new
+    ng.name = "美国、加拿大"
+    ng.state_id = 6
+    ng.save
+
+    ng = NationGroup.new
+    ng.name = "墨西哥、古巴"
+    ng.state_id = 7
+    ng.save
+
+    ng = NationGroup.new
+    ng.name = "巴西、阿根廷、秘鲁、智利"
+    ng.state_id = 7
+    ng.save
+ 
+    ng = NationGroup.new
+    ng.name = "北非"
+    ng.state_id = 5
+    ng.save
+
+    ng = NationGroup.new
+    ng.name = "南非"
+    ng.state_id = 5
+    ng.save
+
+    ng = NationGroup.new
+    ng.name = "东非"
+    ng.state_id = 5
+    ng.save
+    
+
+    (1..7).each do |i|
+      ng = NationGroup.new
+      ng.name = "其它"
+      ng.state_id = i
+      ng.save
+    end
+    
+    NationGroup.all.each do |ng|
+      names = ng.name.split("、")
+      names.each do |name|
+        nation = Nation.find_by_name_cn(name)
+        next unless nation
+        nation.nation_group_id = ng.id
+        nation.save
+      end
+    end
+  end
+
+  def crawl_city_group
+    nodes = @page_html.css(".item-season .panel-con ul li")
+    nodes.each_with_index do |node,i|
+      cg = CityGroup.new
+      cg.name = node.css("strong").text
+      cg.group_id = 1
+      cg.save
+
+      area_nodes = node.css("a")
+      area_nodes.each do |area_node|
+        a = Area.find_by_name_cn(area_node.text.strip)
+        puts area_node.text.strip unless a
+        next unless a
+        a.city_group_id = cg.id
+        a.save
+      end
+    end
+
+    nodes = @page_html.css(".item-theme .panel-con ul li")
+    nodes.each_with_index do |node,i|
+      cg = CityGroup.new
+      cg.name = node.css("strong").text
+      cg.group_id = 2
+      cg.save
+
+      area_nodes = node.css("a")
+      area_nodes.each do |area_node|
+        a = Area.find_by_name_cn(area_node.text.strip)
+        puts area_node.text.strip unless a
+        next unless a
+        a.city_group_id = cg.id
+        a.save
+      end
+    end
+
+    
+    cg = CityGroup.new
+    cg.name = "最佳海边度假地"
+    cg.group_id = 3
+    cg.save
+
+    area_nodes = @page_html.css(".item-seaside .panel-con a")
+    area_nodes.each do |area_node|
+      a = Area.find_by_name_cn(area_node.text.strip)
+      puts area_node.text.strip unless a
+      next unless a
+      a.city_group_id = cg.id
+      a.save
+    end
+    
+
   end
 
   def change_node_br_to_newline node

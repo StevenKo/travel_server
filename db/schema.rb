@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130501073158) do
+ActiveRecord::Schema.define(:version => 20130501150014) do
 
   create_table "area_intro_cates", :force => true do |t|
     t.string   "name"
@@ -39,21 +39,41 @@ ActiveRecord::Schema.define(:version => 20130501073158) do
     t.string   "pic"
     t.string   "note_link"
     t.string   "site_link"
+    t.integer  "city_group_id"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+  end
+
+  add_index "areas", ["city_group_id"], :name => "index_areas_on_city_group_id"
+  add_index "areas", ["link"], :name => "index_areas_on_link"
+  add_index "areas", ["nation_id"], :name => "index_areas_on_nation_id"
+
+  create_table "city_groups", :force => true do |t|
+    t.string   "name"
+    t.integer  "group_id"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
 
-  add_index "areas", ["nation_id"], :name => "index_areas_on_nation_id"
+  create_table "nation_groups", :force => true do |t|
+    t.string   "name"
+    t.integer  "state_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "nations", :force => true do |t|
     t.string   "name"
     t.string   "name_cn"
     t.string   "link"
     t.integer  "state_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.integer  "nation_group_id"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
   end
 
+  add_index "nations", ["link"], :name => "index_nations_on_link"
+  add_index "nations", ["nation_group_id"], :name => "index_nations_on_nation_group_id"
   add_index "nations", ["state_id"], :name => "index_nations_on_state_id"
 
   create_table "notes", :force => true do |t|
@@ -62,31 +82,39 @@ ActiveRecord::Schema.define(:version => 20130501073158) do
     t.integer  "read_num"
     t.string   "date"
     t.string   "pic"
-    t.text     "content",    :limit => 16777215
+    t.text     "content",         :limit => 16777215
     t.integer  "area_id"
     t.integer  "order_best"
     t.integer  "order_new"
     t.string   "link"
-    t.datetime "created_at",                     :null => false
-    t.datetime "updated_at",                     :null => false
+    t.integer  "nation_id"
+    t.integer  "nation_group_id"
+    t.datetime "created_at",                          :null => false
+    t.datetime "updated_at",                          :null => false
   end
 
   add_index "notes", ["area_id"], :name => "index_notes_on_area_id"
   add_index "notes", ["link"], :name => "index_notes_on_link"
+  add_index "notes", ["nation_group_id"], :name => "index_notes_on_nation_group_id"
+  add_index "notes", ["nation_id"], :name => "index_notes_on_nation_id"
   add_index "notes", ["title"], :name => "index_notes_on_title"
 
   create_table "sites", :force => true do |t|
     t.string   "name"
     t.string   "pic"
-    t.integer  "order"
+    t.integer  "rank"
     t.text     "info"
     t.text     "intro"
     t.integer  "area_id"
-    t.datetime "created_at", :null => false
-    t.datetime "updated_at", :null => false
+    t.integer  "nation_id"
+    t.integer  "nation_group_id"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
   end
 
   add_index "sites", ["area_id"], :name => "index_sites_on_area_id"
+  add_index "sites", ["nation_group_id"], :name => "index_sites_on_nation_group_id"
+  add_index "sites", ["nation_id"], :name => "index_sites_on_nation_id"
 
   create_table "states", :force => true do |t|
     t.string   "name_cn"

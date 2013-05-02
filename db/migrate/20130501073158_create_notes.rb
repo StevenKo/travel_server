@@ -11,6 +11,8 @@ class CreateNotes < ActiveRecord::Migration
       t.integer :order_best
       t.integer :order_new
       t.string :link
+      t.integer :nation_id
+      t.integer :nation_group_id
 
       t.timestamps
     end
@@ -18,5 +20,7 @@ class CreateNotes < ActiveRecord::Migration
     add_index :notes, :area_id
     add_index :notes, :title
     add_index :notes, :link
+    add_index :notes, :nation_id
+    add_index :notes, :nation_group_id
   end
 end
