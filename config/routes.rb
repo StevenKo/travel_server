@@ -5,9 +5,11 @@ TravelServer::Application.routes.draw do
   namespace :api do
     namespace :v1 do
       
-      resources :areas, :only => [:index]
+      resources :city_groups, :only => [:index]
+      resources :nation_groups, :only => [:index]
       resources :nations, :only => [:index]
       resources :states, :only => [:index]
+      resources :areas, :only => [:index]
       resources :area_intros
       resources :area_intro_cates
       resources :sites
