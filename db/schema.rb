@@ -82,13 +82,13 @@ ActiveRecord::Schema.define(:version => 20130501150014) do
     t.integer  "read_num"
     t.string   "date"
     t.string   "pic"
-    t.text     "content",         :limit => 16777215
     t.integer  "area_id"
     t.integer  "order_best"
     t.integer  "order_new"
     t.string   "link"
     t.integer  "nation_id"
     t.integer  "nation_group_id"
+    t.text     "content",         :limit => 16777215
     t.datetime "created_at",                          :null => false
     t.datetime "updated_at",                          :null => false
   end
@@ -103,11 +103,11 @@ ActiveRecord::Schema.define(:version => 20130501150014) do
     t.string   "name"
     t.string   "pic"
     t.integer  "rank"
-    t.text     "info"
-    t.text     "intro"
     t.integer  "area_id"
     t.integer  "nation_id"
     t.integer  "nation_group_id"
+    t.text     "info"
+    t.text     "intro"
     t.datetime "created_at",      :null => false
     t.datetime "updated_at",      :null => false
   end

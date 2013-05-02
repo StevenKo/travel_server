@@ -1,8 +1,7 @@
 class Api::V1::NationsController < Api::ApiController
   
   def index
-    state_id = params[:state_id]
-    nations = Nation.where("state_id = #{state_id}").select("id, name, name_cn")
+    nations = Nation.select("id, name, name_cn, state_id, nation_group_id")
     render :json => nations
   end
 end

@@ -4,11 +4,11 @@ class CreateSites < ActiveRecord::Migration
       t.string :name
       t.string :pic
       t.integer :rank
-      t.text :info
-      t.text :intro
       t.integer :area_id
       t.integer :nation_id
       t.integer :nation_group_id
+      t.text :info
+      t.text :intro
 
       t.timestamps
     end
