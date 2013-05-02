@@ -1,7 +1,7 @@
 class Api::V1::SitesController < Api::ApiController
   def index
     area_id = params[:area_id]
-    sites = Site.where("area_id = #{area_id}").select("id, name, pic,rank").order("rank ASC")
+    sites = Site.where("area_id = #{area_id}").select("id, name, pic,rank").order("rank ASC").paginate(:page => params[:page], :per_page => 20).order("rank ASC")
     render :json => sites
   end
 
