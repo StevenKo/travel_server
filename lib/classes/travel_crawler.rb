@@ -125,38 +125,9 @@ class TravelCrawler
 
 
   def crawl_area_notes area_id, order
-    nodes = @page_html.css("#Main_forumDetail .forum-item")
+    nodes = @page_html.css(".forum-item")
     nodes.each do |node|
-      read_num = node.css(".spt").text.match(/\d*/).to_s.to_i
-      pic = nil
-      pic = node.css(".item-photo img")[0][:src] unless node.css(".item-photo img").blank?
-      title = node.css("h3 a").text.strip
-      link = node.css("h3 a")[0][:href]
-      author = node.css(".item-infor em a").text
-      date = node.css(".item-infor i").text
-      
-      c1 = TravelCrawler.new
-      c1.fetch node.css("h3 a")[0][:href]
-      content = c1.page_html.css("#journal-content").to_html
-      
-      area = Area.select("id, nation_id").find(area_id)
-      nation = Nation.select("id, nation_group_id").find(area.nation_id)
-
-      note = Note.new
-      note.title = title
-      note.author = author
-      note.read_num = read_num
-      note.date = date
-      note.pic = pic
-      note.content = content
-      note.area_id = area_id
-      note.order_best = order
-      note.nation_id = area.nation_id
-      note.nation_group_id = nation.nation_group_id
-      note.link = link
-      order += 1
-      note.save
-
+      parse_note(node,order,area_id)
     end
 
     a_node = @page_html.css(".new-paging em.current")[0]
@@ -167,7 +138,7 @@ class TravelCrawler
   end
 
   def crawl_area_notes_order_new area_id, order
-    nodes = @page_html.css("#Main_forumDetail .forum-item")
+    nodes = @page_html.css(".forum-item")
     nodes.each do |node|
       link = node.css("h3 a")[0][:href]
       note = Note.find_by_link(link)
@@ -330,5 +301,112 @@ class TravelCrawler
     content = content.gsub("<br>","\n")
     n = Nokogiri::HTML(content)
     n.text
+  end
+
+  def crawl_best_note order
+    nodes = @page_html.css(".forum-item")
+    nodes.each do |node|
+      link = node.css("h3 a")[0][:href]
+      note = Note.select("id").find_by_link(link)
+      note = parse_note(node,order) unless note
+      best = BestNote.new
+      best.note_id = note.id
+      best.order = order
+      order += 1
+      best.save
+    end
+
+    a_node = @page_html.css(".new-paging em.current")[0]
+    if a_node.next.name == "a"
+      CrawlBestNoteWorker.perform_async(order,a_node.next[:href])
+    end
+  end
+
+
+  def crawl_new_note order
+    nodes = @page_html.css(".forum-item")
+    nodes.each do |node|
+      link = node.css("h3 a")[0][:href]
+      note = Note.select("id").find_by_link(link)
+      note = parse_note(node,order) unless note
+      best = NewNote.new
+      best.note_id = note.id
+      best.order = order
+      order += 1
+      best.save
+    end
+
+    a_node = @page_html.css(".new-paging em.current")[0]
+    if a_node.next.name == "a"
+      CrawlNewNoteWorker.perform_async(order,a_node.next[:href])
+    end
+  end
+
+  def crawl_most_view_note order
+    nodes = @page_html.css(".forum-item")
+    nodes.each do |node|
+      link = node.css("h3 a")[0][:href]
+      note = Note.select("id").find_by_link(link)
+      note = parse_note(node,order) unless note
+      best = MostViewNote.new
+      best.note_id = note.id
+      best.order = order
+      order += 1
+      best.save
+    end
+
+    a_node = @page_html.css(".new-paging em.current")[0]
+    if a_node.next.name == "a"
+      CrawlMostViewNoteWorker.perform_async(order,a_node.next[:href])
+    end
+  end
+
+  def parse_note node,order,area_id=nil
+    link = node.css("h3 a")[0][:href]
+    
+    note = Note.find_by_link(link)
+    
+    if (note == nil)
+      read_num = node.css(".spt").text.match(/\d*/).to_s.to_i
+      pic = nil
+      pic = node.css(".item-photo img")[0][:src] unless node.css(".item-photo img").blank?
+      title = node.css("h3 a").text.strip
+      author = node.css(".item-infor em a").text
+      date = node.css(".item-infor i").text
+      
+      c1 = TravelCrawler.new
+      c1.fetch node.css("h3 a")[0][:href]
+      content = c1.page_html.css("#journal-content").to_html
+      
+      note = Note.new
+      if(area_id != nil)
+        area = Area.select("id, nation_id").find(area_id)
+        nation = Nation.select("id, nation_group_id").find(area.nation_id)
+        note.area_id = area_id
+        note.nation_id = area.nation_id
+        note.nation_group_id = nation.nation_group_id
+      end
+      note.title = title
+      note.author = author
+      note.read_num = read_num
+      note.date = date
+      note.pic = pic
+      note.content = content
+      note.order_best = order
+      note.link = link
+      order += 1
+      note.save
+      return note
+    else
+      if(area_id != nil)
+        area = Area.select("id, nation_id").find(area_id)
+        nation = Nation.select("id, nation_group_id").find(area.nation_id)
+        note.area_id = area_id
+        note.nation_id = area.nation_id
+        note.nation_group_id = nation.nation_group_id
+        note.save
+      end
+      return note if note
+    end
   end
 end

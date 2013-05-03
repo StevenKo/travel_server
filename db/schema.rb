@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130501150014) do
+ActiveRecord::Schema.define(:version => 20130503035250) do
 
   create_table "area_intro_cates", :force => true do |t|
     t.string   "name"
@@ -48,12 +48,32 @@ ActiveRecord::Schema.define(:version => 20130501150014) do
   add_index "areas", ["link"], :name => "index_areas_on_link"
   add_index "areas", ["nation_id"], :name => "index_areas_on_nation_id"
 
+  create_table "best_notes", :force => true do |t|
+    t.integer  "note_id"
+    t.integer  "order"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "best_notes", ["note_id"], :name => "index_best_notes_on_note_id"
+  add_index "best_notes", ["order"], :name => "index_best_notes_on_order"
+
   create_table "city_groups", :force => true do |t|
     t.string   "name"
     t.integer  "group_id"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
   end
+
+  create_table "most_view_notes", :force => true do |t|
+    t.integer  "note_id"
+    t.integer  "order"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "most_view_notes", ["note_id"], :name => "index_most_view_notes_on_note_id"
+  add_index "most_view_notes", ["order"], :name => "index_most_view_notes_on_order"
 
   create_table "nation_groups", :force => true do |t|
     t.string   "name"
@@ -75,6 +95,16 @@ ActiveRecord::Schema.define(:version => 20130501150014) do
   add_index "nations", ["link"], :name => "index_nations_on_link"
   add_index "nations", ["nation_group_id"], :name => "index_nations_on_nation_group_id"
   add_index "nations", ["state_id"], :name => "index_nations_on_state_id"
+
+  create_table "new_notes", :force => true do |t|
+    t.integer  "note_id"
+    t.integer  "order"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "new_notes", ["note_id"], :name => "index_new_notes_on_note_id"
+  add_index "new_notes", ["order"], :name => "index_new_notes_on_order"
 
   create_table "notes", :force => true do |t|
     t.string   "title"

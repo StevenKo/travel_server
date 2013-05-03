@@ -28,6 +28,9 @@ TravelServer::Application.routes.draw do
       resources :notes do
         collection do 
           get 'nation_group'
+          get 'most_view_notes'
+          get 'new_notes'
+          get 'best_notes'
         end
       end
 

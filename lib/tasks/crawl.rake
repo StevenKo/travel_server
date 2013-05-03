@@ -77,4 +77,16 @@ namespace :crawl do
     end
   end
 
+  task :crawl_best_notes => :environment do
+    CrawlBestNoteWorker.perform_async(1,"/journals.aspx?type=3&dname=&title=&tag=0&tagn=&author=&group=0&orderby=")
+  end
+
+  task :crawl_new_notes => :environment do
+    CrawlNewNoteWorker.perform_async(1,"/journals.aspx?type=0&dname=&title=&tag=0&tagn=&author=&group=0&orderby=")
+  end
+
+  task :crawl_most_view_notes => :environment do
+    CrawlMostViewNoteWorker.perform_async(1,"/journals.aspx?type=0&dname=&title=&tag=0&tagn=&author=&group=0&orderby=r")
+  end
+
 end

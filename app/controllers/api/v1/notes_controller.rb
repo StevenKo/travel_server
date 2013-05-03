@@ -28,6 +28,21 @@ class Api::V1::NotesController < Api::ApiController
     render :json => notes
   end
 
+  def most_view_notes
+    notes = MostViewNote.joins(:note).select("notes.id, notes.title, notes.author,notes.date,notes.pic,notes.read_num").paginate(:page => params[:page], :per_page => 20).order("id ASC")
+    render :json => notes
+  end
+
+  def new_notes
+    notes = NewNote.joins(:note).select("notes.id, notes.title, notes.author,notes.date,notes.pic,notes.read_num").paginate(:page => params[:page], :per_page => 20).order("id ASC")
+    render :json => notes
+  end
+
+  def best_notes
+    notes = BestNote.joins(:note).select("notes.id, notes.title, notes.author,notes.date,notes.pic,notes.read_num").paginate(:page => params[:page], :per_page => 20).order("id ASC")
+    render :json => notes
+  end
+
   def show
     note = Note.find(params[:id])
     render :json => note
