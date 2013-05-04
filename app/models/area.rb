@@ -1,3 +1,4 @@
 class Area < ActiveRecord::Base
-  # attr_accessible :title, :body
+  has_many :area_note_relations
+  has_many :notes, :through => :area_note_relations
 end

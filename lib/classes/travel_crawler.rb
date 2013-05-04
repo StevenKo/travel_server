@@ -376,16 +376,15 @@ class TravelCrawler
       
       c1 = TravelCrawler.new
       c1.fetch node.css("h3 a")[0][:href]
-      content = c1.page_html.css("#journal-content").to_html
+      node = c1.page_html.css("#journal-content")
+      img_nodes = node.css("img")
+      img_nodes.each do |img_node|
+        img_node.set_attribute("height","auto")
+        img_node.set_attribute("max-width","100%")
+      end
+      content = node.to_html
       
       note = Note.new
-      if(area_id != nil)
-        area = Area.select("id, nation_id").find(area_id)
-        nation = Nation.select("id, nation_group_id").find(area.nation_id)
-        note.area_id = area_id
-        note.nation_id = area.nation_id
-        note.nation_group_id = nation.nation_group_id
-      end
       note.title = title
       note.author = author
       note.read_num = read_num
@@ -396,15 +395,29 @@ class TravelCrawler
       note.link = link
       order += 1
       note.save
-      return note
-    else
+      
       if(area_id != nil)
         area = Area.select("id, nation_id").find(area_id)
         nation = Nation.select("id, nation_group_id").find(area.nation_id)
-        note.area_id = area_id
-        note.nation_id = area.nation_id
-        note.nation_group_id = nation.nation_group_id
-        note.save
+        relation = AreaNoteRelation.new
+        relation.area_id = area_id
+        relation.nation_id = area.nation_id
+        relation.nation_group_id = nation.nation_group_id
+        relation.note_id = note.id
+        relation.save
+      end
+
+      return note
+    else
+      if(area_id != nil && AreaNoteRelation.where("note_id = #{note.id} and area_id = #{area_id}").blank?)
+        area = Area.select("id, nation_id").find(area_id)
+        nation = Nation.select("id, nation_group_id").find(area.nation_id)
+        relation = AreaNoteRelation.new
+        relation.area_id = area_id
+        relation.nation_id = area.nation_id
+        relation.nation_group_id = nation.nation_group_id
+        relation.note_id = note.id
+        relation.save
       end
       return note if note
     end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130503035250) do
+ActiveRecord::Schema.define(:version => 20130504092114) do
 
   create_table "area_intro_cates", :force => true do |t|
     t.string   "name"
@@ -30,6 +30,20 @@ ActiveRecord::Schema.define(:version => 20130503035250) do
 
   add_index "area_intros", ["area_id"], :name => "index_area_intros_on_area_id"
   add_index "area_intros", ["area_intro_cate_id"], :name => "index_area_intros_on_area_intro_cate_id"
+
+  create_table "area_note_relations", :force => true do |t|
+    t.integer  "note_id"
+    t.integer  "area_id"
+    t.integer  "nation_id"
+    t.integer  "nation_group_id"
+    t.datetime "created_at",      :null => false
+    t.datetime "updated_at",      :null => false
+  end
+
+  add_index "area_note_relations", ["area_id"], :name => "index_area_note_relations_on_area_id"
+  add_index "area_note_relations", ["nation_group_id"], :name => "index_area_note_relations_on_nation_group_id"
+  add_index "area_note_relations", ["nation_id"], :name => "index_area_note_relations_on_nation_id"
+  add_index "area_note_relations", ["note_id"], :name => "index_area_note_relations_on_note_id"
 
   create_table "areas", :force => true do |t|
     t.string   "name"
