@@ -140,8 +140,8 @@ class TravelCrawler
   def crawl_area_notes_order_new area_id, order
     nodes = @page_html.css(".forum-item")
     nodes.each do |node|
-      link = node.css("h3 a")[0][:href]
-      note = Note.find_by_link(link)
+      title = node.css("h3 a").text.strip
+      note = Note.select("id").find_by_title(title)
       next unless note
       note.order_new = order
       order += 1
@@ -306,9 +306,9 @@ class TravelCrawler
   def crawl_best_note order
     nodes = @page_html.css(".forum-item")
     nodes.each do |node|
-      link = node.css("h3 a")[0][:href]
-      note = Note.select("id").find_by_link(link)
-      note = parse_note(node,order) unless note
+      title = node.css("h3 a").text.strip
+      note = Note.select("id").find_by_title(title)
+      note = parse_note(node,nil) unless note
       best = BestNote.new
       best.note_id = note.id
       best.order = order
@@ -326,9 +326,9 @@ class TravelCrawler
   def crawl_new_note order
     nodes = @page_html.css(".forum-item")
     nodes.each do |node|
-      link = node.css("h3 a")[0][:href]
-      note = Note.select("id").find_by_link(link)
-      note = parse_note(node,order) unless note
+      title = node.css("h3 a").text.strip
+      note = Note.select("id").find_by_title(title)
+      note = parse_note(node,nil) unless note
       best = NewNote.new
       best.note_id = note.id
       best.order = order
@@ -345,9 +345,9 @@ class TravelCrawler
   def crawl_most_view_note order
     nodes = @page_html.css(".forum-item")
     nodes.each do |node|
-      link = node.css("h3 a")[0][:href]
-      note = Note.select("id").find_by_link(link)
-      note = parse_note(node,order) unless note
+      title = node.css("h3 a").text.strip
+      note = Note.select("id").find_by_title(title)
+      note = parse_note(node,nil) unless note
       best = MostViewNote.new
       best.note_id = note.id
       best.order = order
@@ -363,14 +363,14 @@ class TravelCrawler
 
   def parse_note node,order,area_id=nil
     link = node.css("h3 a")[0][:href]
+    title = node.css("h3 a").text.strip
     
-    note = Note.find_by_link(link)
+    note = Note.find_by_title(title)
     
     if (note == nil)
       read_num = node.css(".spt").text.match(/\d*/).to_s.to_i
       pic = nil
       pic = node.css(".item-photo img")[0][:src] unless node.css(".item-photo img").blank?
-      title = node.css("h3 a").text.strip
       author = node.css(".item-infor em a").text
       date = node.css(".item-infor i").text
       
@@ -379,8 +379,8 @@ class TravelCrawler
       node = c1.page_html.css("#journal-content")
       img_nodes = node.css("img")
       img_nodes.each do |img_node|
+        img_node.set_attribute("width","100%")
         img_node.set_attribute("height","auto")
-        img_node.set_attribute("max-width","100%")
       end
       content = node.to_html
       

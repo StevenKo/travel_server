@@ -47,4 +47,15 @@ class Api::V1::NotesController < Api::ApiController
     note = Note.find(params[:id])
     render :json => note
   end
+
+  def search
+    notes = Note.search(params)
+    if notes.present?
+      ids = notes.map{|item| item["id"]}.join(",")
+      @notes = Note.where("id in (#{ids})").select("id,title,author,date,pic,read_num")
+      render :json => @notes
+    else
+      render :json => []
+    end
+  end
 end

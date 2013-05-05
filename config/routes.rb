@@ -22,6 +22,7 @@ TravelServer::Application.routes.draw do
       resources :sites do
         collection do 
           get 'nation_group'
+          get 'search'
         end
       end
       
@@ -31,6 +32,7 @@ TravelServer::Application.routes.draw do
           get 'most_view_notes'
           get 'new_notes'
           get 'best_notes'
+          get 'search'
         end
       end
 

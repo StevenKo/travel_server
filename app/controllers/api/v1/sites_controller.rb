@@ -15,4 +15,16 @@ class Api::V1::SitesController < Api::ApiController
     site = Site.find(params[:id])
     render :json => site
   end
+
+  def search
+    sites = Site.search(params)
+    if sites.present?
+      ids = sites.map{|item| item["id"]}.join(",")
+      @sites = Site.where("id in (#{ids})").select("id, name, pic,rank")
+      render :json => @sites
+    else
+      render :json => []
+    end
+
+  end
 end

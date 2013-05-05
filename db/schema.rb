@@ -126,21 +126,15 @@ ActiveRecord::Schema.define(:version => 20130504092114) do
     t.integer  "read_num"
     t.string   "date"
     t.string   "pic"
-    t.integer  "area_id"
     t.integer  "order_best"
     t.integer  "order_new"
     t.string   "link"
-    t.integer  "nation_id"
-    t.integer  "nation_group_id"
-    t.text     "content",         :limit => 16777215
-    t.datetime "created_at",                          :null => false
-    t.datetime "updated_at",                          :null => false
+    t.text     "content",    :limit => 16777215
+    t.datetime "created_at",                     :null => false
+    t.datetime "updated_at",                     :null => false
   end
 
-  add_index "notes", ["area_id"], :name => "index_notes_on_area_id"
   add_index "notes", ["link"], :name => "index_notes_on_link"
-  add_index "notes", ["nation_group_id"], :name => "index_notes_on_nation_group_id"
-  add_index "notes", ["nation_id"], :name => "index_notes_on_nation_id"
   add_index "notes", ["title"], :name => "index_notes_on_title"
 
   create_table "sites", :force => true do |t|
