@@ -6,7 +6,7 @@ class Site < ActiveRecord::Base
 
   def self.search(params)
     tire.search(page: params[:page], per_page: 20) do
-      query { string "name: #{params[:keyword]}", default_operator: "AND" }
+      query { string "name: #{params[:keyword]}~", default_operator: "AND" }
     end
   end
 
