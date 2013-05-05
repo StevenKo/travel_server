@@ -256,8 +256,7 @@ class TravelCrawler
         a = Area.find_by_name_cn(area_node.text.strip)
         puts area_node.text.strip unless a
         next unless a
-        a.city_group_id = cg.id
-        a.save
+        CitiAndCityGroupRelation.create(:area_id => a.id, :city_group_id => cg.id)
       end
     end
 
@@ -273,8 +272,7 @@ class TravelCrawler
         a = Area.find_by_name_cn(area_node.text.strip)
         puts area_node.text.strip unless a
         next unless a
-        a.city_group_id = cg.id
-        a.save
+        CitiAndCityGroupRelation.create(:area_id => a.id, :city_group_id => cg.id)
       end
     end
 
@@ -289,10 +287,39 @@ class TravelCrawler
       a = Area.find_by_name_cn(area_node.text.strip)
       puts area_node.text.strip unless a
       next unless a
-      a.city_group_id = cg.id
-      a.save
+      CitiAndCityGroupRelation.create(:area_id => a.id, :city_group_id => cg.id)
     end
     
+    c = TravelCrawler.new
+    c.fetch "/journals/citys.aspx"
+
+    cg = CityGroup.new
+    cg.name = "中國和台灣"
+    cg.group_id = 4
+    cg.save
+
+    area_nodes = c.page_html.css("#Main_div_hot_journal_inchina a")
+    area_nodes.each do |area_node|
+      a = Area.find_by_name_cn(area_node.text.strip)
+      puts area_node.text.strip unless a
+      next unless a
+      CitiAndCityGroupRelation.create(:area_id => a.id, :city_group_id => cg.id)
+    end
+
+    cg = CityGroup.new
+    cg.name = "國外城市"
+    cg.group_id = 4
+    cg.save
+
+    area_nodes = c.page_html.css("#Main_div_hot_journal_abroad a")
+    area_nodes.each do |area_node|
+      a = Area.find_by_name_cn(area_node.text.strip)
+      puts area_node.text.strip unless a
+      next unless a
+      CitiAndCityGroupRelation.create(:area_id => a.id, :city_group_id => cg.id)
+    end
+
+
 
   end
 

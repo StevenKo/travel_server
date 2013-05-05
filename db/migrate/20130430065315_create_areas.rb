@@ -8,12 +8,10 @@ class CreateAreas < ActiveRecord::Migration
       t.string :pic
       t.string :note_link
       t.string :site_link
-      t.integer :city_group_id
 
       t.timestamps
     end
     add_index :areas, :nation_id
-    add_index :areas, :city_group_id
     add_index :areas, :link
   end
 end

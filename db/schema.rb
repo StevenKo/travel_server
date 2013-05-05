@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130504092114) do
+ActiveRecord::Schema.define(:version => 20130505064815) do
 
   create_table "area_intro_cates", :force => true do |t|
     t.string   "name"
@@ -71,6 +71,16 @@ ActiveRecord::Schema.define(:version => 20130504092114) do
 
   add_index "best_notes", ["note_id"], :name => "index_best_notes_on_note_id"
   add_index "best_notes", ["order"], :name => "index_best_notes_on_order"
+
+  create_table "citi_and_city_group_relations", :force => true do |t|
+    t.integer  "area_id"
+    t.integer  "city_group_id"
+    t.datetime "created_at",    :null => false
+    t.datetime "updated_at",    :null => false
+  end
+
+  add_index "citi_and_city_group_relations", ["area_id"], :name => "index_citi_and_city_group_relations_on_area_id"
+  add_index "citi_and_city_group_relations", ["city_group_id"], :name => "index_citi_and_city_group_relations_on_city_group_id"
 
   create_table "city_groups", :force => true do |t|
     t.string   "name"
