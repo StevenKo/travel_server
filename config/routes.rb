@@ -18,6 +18,7 @@ TravelServer::Application.routes.draw do
       
       resources :area_intros
       resources :area_intro_cates
+      resources :nation_intros
       
       resources :sites do
         collection do 

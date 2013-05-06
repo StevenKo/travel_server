@@ -1,7 +1,7 @@
 # encoding: UTF-8
 
 s = State.new
-s.name = "中國大陸"
+s.name = "中國和台灣"
 s.name_cn = "中国"
 s.link = "/tourism-d110000-china.html"
 s.save
@@ -50,7 +50,7 @@ s.save
 
 n = Nation.new
 n.name = "南极"
-n.name_cn = "南极"
+n.name_cn = "南極"
 n.link = "/journals.aspx?type=3&group=42"
 n.state_id = 8
 n.nation_group_id = 8

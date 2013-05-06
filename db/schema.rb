@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130505064815) do
+ActiveRecord::Schema.define(:version => 20130506061612) do
 
   create_table "area_intro_cates", :force => true do |t|
     t.string   "name"
@@ -104,7 +104,20 @@ ActiveRecord::Schema.define(:version => 20130505064815) do
     t.integer  "state_id"
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
+    t.string   "name_cn"
   end
+
+  create_table "nation_intros", :force => true do |t|
+    t.integer  "nation_id"
+    t.text     "intro"
+    t.string   "title"
+    t.integer  "area_intro_cate_id"
+    t.datetime "created_at",         :null => false
+    t.datetime "updated_at",         :null => false
+  end
+
+  add_index "nation_intros", ["area_intro_cate_id"], :name => "index_nation_intros_on_area_intro_cate_id"
+  add_index "nation_intros", ["nation_id"], :name => "index_nation_intros_on_nation_id"
 
   create_table "nations", :force => true do |t|
     t.string   "name"
@@ -158,6 +171,7 @@ ActiveRecord::Schema.define(:version => 20130505064815) do
     t.text     "intro"
     t.datetime "created_at",      :null => false
     t.datetime "updated_at",      :null => false
+    t.text     "pics"
   end
 
   add_index "sites", ["area_id"], :name => "index_sites_on_area_id"

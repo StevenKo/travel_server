@@ -33,6 +33,45 @@ namespace :crawl do
     end
   end
 
+  task :crawl_nation_hot_city => :environment do
+    Nation.all.each do |n|
+      c = TravelCrawler.new
+      c.fetch n.link
+      scripts = c.page_html.css("script")
+      as = scripts.text.match(/var photoArray=(.*)showName:true/).to_s.split("photoViewerUrl:\"")
+      as.each do |a|
+        if a.index('",caption')
+          link = a[0..a.index('",caption')-1]
+          area = Area.find_by_link(link)
+          unless area
+             area = Area.new
+             area.link = link
+             area.nation_id = n.id
+             area.save
+          end
+        end
+      end
+    end
+
+    Area.where("name is null").each do |area|
+      CrawlAreaDetailWorker.perform_async(area.id)
+    end
+  end
+
+  task :delete_duplicate_area => :environment do
+    Area.select("id,link").find_in_batches do |areas|
+      areas.each do |area|
+        all = Area.where("link = ?",area.link)
+        if all.size > 1
+          all.each_with_index do |a,index|
+            next if index == 0
+            a.delete
+          end
+        end
+      end
+    end
+  end
+
   task :crawl_city_group => :environment do
     c = TravelCrawler.new
     c.lvping_fetch "/"
@@ -50,6 +89,14 @@ namespace :crawl do
     end
   end
 
+  task :crawl_nation_intro => :environment do
+    nations = Nation.select("id").all
+
+    nations.each do |nation|
+      CrawlNationIntroWorker.perform_async(nation.id)
+    end
+  end
+
   task :crawl_area_site => :environment do
     areas = Area.select("id,link").all
 
@@ -60,19 +107,19 @@ namespace :crawl do
 
 
   task :crawl_area_notes => :environment do
-    areas = Area.select("id,note_link").all
+    areas = Area.select("id,link").all
 
     areas.each do |area|
-      CrawlAreaNoteWorker.perform_async(area.id,1,area.note_link)
+      CrawlAreaNoteWorker.perform_async(area.id,1,area.link.downcase.gsub("tourism", "journals"))
     end
   end
 
   task :crawl_area_notes_order_new => :environment do
-    areas = Area.select("id,note_link").all
+    areas = Area.select("id,link").all
 
     areas.each do |area|
       c = TravelCrawler.new
-      c.fetch area.note_link
+      c.fetch area.link.downcase.gsub("tourism", "journals")
       CrawlNoteOrderNewWorker.perform_async(area.id,1,c.page_html.css(".tab_items_new a")[2][:href])
     end
   end
