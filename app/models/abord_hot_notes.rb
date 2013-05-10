@@ -1,3 +1,3 @@
 class AbordHotNotes < ActiveRecord::Base
-  # attr_accessible :title, :body
+  belongs_to :note
 end
