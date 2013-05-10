@@ -26,6 +26,7 @@ class Api::V1::NotesController < Api::ApiController
     when 3
       notes = AreaNoteRelation.joins(:note).where("area_note_relations.nation_group_id = #{nation_group_id}").select("notes.id, notes.title, notes.author,notes.date,notes.pic,notes.read_num").paginate(:page => params[:page], :per_page => 20).order("read_num DESC")
     end
+    notes = unique_relation_notes(notes)
     render :json => notes
   end
 
@@ -63,5 +64,20 @@ class Api::V1::NotesController < Api::ApiController
     else
       render :json => []
     end
+  end
+
+  private 
+
+  def unique_relation_notes(notes)
+    hash ={}
+    new_notes = notes.reject do |note|
+      if hash[note.id]
+         true
+      else
+        hash[note.id] =1
+         false
+      end
+    end
+    new_notes
   end
 end
