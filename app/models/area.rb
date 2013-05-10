@@ -4,4 +4,6 @@ class Area < ActiveRecord::Base
 
   has_many :citi_and_city_group_relations
   has_many :city_groups , :through => :citi_and_city_group_relations
+
+  belongs_to :nation
 end

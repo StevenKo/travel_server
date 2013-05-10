@@ -42,6 +42,10 @@ module Crawler
   def get_page path
     http = Net::HTTP.new('you.ctrip.com', 80)
     res = http.get path, 'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.162 Safari/535.19', 'Cookie' => '_ts_id=360435043104370F39'
+    while res.code == '301'
+      path = res.header['location']
+      res = http.get path, 'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.162 Safari/535.19', 'Cookie' => '_ts_id=360435043104370F39'
+    end
     content = res.body
     doc = Nokogiri::HTML(content,nil,"GB18030")
   end

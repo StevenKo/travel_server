@@ -34,6 +34,7 @@ TravelServer::Application.routes.draw do
           get 'new_notes'
           get 'best_notes'
           get 'search'
+          get 'aboard_hot'
         end
       end
 

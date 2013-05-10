@@ -107,20 +107,20 @@ namespace :crawl do
 
 
   task :crawl_area_notes => :environment do
-    areas = Area.select("id,link").all
+    areas = Area.select("id,note_link").all
 
     areas.each do |area|
-      CrawlAreaNoteWorker.perform_async(area.id,1,area.link.downcase.gsub("tourism", "journals"))
+      CrawlAreaNoteWorker.perform_async(area.id,1,area.note_link) if area.note_link
     end
   end
 
   task :crawl_area_notes_order_new => :environment do
-    areas = Area.select("id,link").all
+    areas = Area.select("id,note_link").all
 
     areas.each do |area|
-      c = TravelCrawler.new
-      c.fetch area.link.downcase.gsub("tourism", "journals")
-      CrawlNoteOrderNewWorker.perform_async(area.id,1,c.page_html.css(".tab_items_new a")[2][:href])
+      if (area.note_link)
+        CrawlNoteOrderNewWorker.perform_async(area.id,1,area.note_link.gsub("sh0","s0"))
+      end
     end
   end
 

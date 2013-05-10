@@ -11,7 +11,17 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130506061612) do
+ActiveRecord::Schema.define(:version => 20130510013658) do
+
+  create_table "abord_hot_notes", :force => true do |t|
+    t.integer  "note_id"
+    t.integer  "order"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  add_index "abord_hot_notes", ["note_id"], :name => "index_abord_hot_notes_on_note_id"
+  add_index "abord_hot_notes", ["order"], :name => "index_abord_hot_notes_on_order"
 
   create_table "area_intro_cates", :force => true do |t|
     t.string   "name"

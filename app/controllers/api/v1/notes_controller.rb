@@ -1,4 +1,6 @@
 class Api::V1::NotesController < Api::ApiController
+  caches_page :aboard_hot
+
   def index
     area_id = params[:area_id]
     order = params[:order]
@@ -25,6 +27,11 @@ class Api::V1::NotesController < Api::ApiController
     when 3
       notes = AreaNoteRelation.joins(:note).where("area_note_relations.nation_group_id = #{nation_group_id}").select("notes.id, notes.title, notes.author,notes.date,notes.pic,notes.read_num").paginate(:page => params[:page], :per_page => 20).order("read_num DESC")
     end
+    render :json => notes
+  end
+
+  def aboard_hot
+    notes = AbordHotNotes.joins(:note).select("notes.id, notes.title, notes.author,notes.date,notes.pic,notes.read_num").paginate(:page => params[:page], :per_page => 20).order("id ASC")
     render :json => notes
   end
 

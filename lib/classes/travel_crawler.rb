@@ -41,6 +41,7 @@ class TravelCrawler
       nation = Nation.find(nation_id)
       a = Area.new
       a.link = nation.link
+      a.note_link = nation.link
       a.nation_id = nation_id
       a.save
     end
@@ -55,7 +56,12 @@ class TravelCrawler
     title = @page_html.css(".main-title").text.strip
     puts area_id
     a.pic = pic if pic 
-    a.note_link = note_link if note_link
+    if note_link
+      a.note_link = note_link
+    else
+      /-(d\d*)-/ =~ a.link
+      a.note_link = "/journals-#{$1}-sh0-p1/:journals.html"
+    end
     a.site_link = site_link if site_link
     a.name_cn = title
     a.name = ZhConv.convert("zh-tw", @page_html.css(".main-title").text.strip)
@@ -162,7 +168,7 @@ class TravelCrawler
   end
 
   def crawl_area_sites area_id
-    nodes = @page_html.css("#Main_DistrictSightListPage1_div_SightList dl")
+    nodes = @page_html.css("#Main_DistrictSightListPage1_div_SightList > dl")
     nodes.each do |node|
       name = node.css("dt a").text.strip
       name = ZhConv.convert("zh-tw", name)
@@ -175,19 +181,15 @@ class TravelCrawler
 
       c1 = TravelCrawler.new
       c1.fetch node.css("dt a")[0][:href]
+      nodes = c1.page_html.css("#Main_divSightDetail")[0]
+      c1.conver_nodo_tw(nodes)
       nodes_items = c1.page_html.css("#Main_divSightDetail .item")
-      nodes = c1.page_html.css("#Main_divSightDetail")
       info = nodes.to_html.gsub(nodes_items[0].to_html,"")
-      if nodes_items.last.text.include? ("没有点评")
+      if nodes_items.last.text.include? (ZhConv.convert("zh-tw", "没有点评"))
         info.gsub!(nodes_items.last.to_html,"")
       end
       info.gsub!("<a ","<span ")
       info.gsub!("</a>","</span>")
-      doc = Nokogiri::HTML.parse(info)
-      doc.css('text()').each do |info_text|
-        info_text.content = ZhConv.convert("zh-tw", info_text.content)
-      end
-      info = doc.to_html
 
       intro = c1.page_html.css("#Main_divSightIntroduce")
       intro_texts = intro.css('#Main_divSightIntroduce text()')
@@ -227,9 +229,11 @@ class TravelCrawler
     nodes = @page_html.css(".forum-item")
     nodes.each do |node|
       parse_note(node,order,area_id)
+      order += 1
     end
 
     a_node = @page_html.css(".new-paging em.current")[0]
+    return unless a_node
     if a_node.next.name == "a"
       CrawlAreaNoteWorker.perform_async(area_id,order,a_node.next[:href])
     end
@@ -247,6 +251,7 @@ class TravelCrawler
       note.save
     end
     a_node = @page_html.css(".new-paging em.current")[0]
+    return unless a_node
     if a_node.next.name == "a"
       CrawlNoteOrderNewWorker.perform_async(area_id,order,a_node.next[:href])
     end
@@ -442,10 +447,13 @@ class TravelCrawler
 
   def crawl_best_note order
     nodes = @page_html.css(".forum-item")
+    raise "error crawl agian " if nodes.blank?
     nodes.each do |node|
       title = node.css("h3 a").text.strip
+      title = ZhConv.convert("zh-tw", title)
       note = Note.select("id").find_by_title(title)
       note = parse_note(node,nil) unless note
+      next unless note
       best = BestNote.new
       best.note_id = note.id
       best.order = order
@@ -454,6 +462,7 @@ class TravelCrawler
     end
 
     a_node = @page_html.css(".new-paging em.current")[0]
+    return unless a_node
     if a_node.next.name == "a"
       CrawlBestNoteWorker.perform_async(order,a_node.next[:href])
     end
@@ -462,10 +471,13 @@ class TravelCrawler
 
   def crawl_new_note order
     nodes = @page_html.css(".forum-item")
+    raise "error crawl agian " if nodes.blank?
     nodes.each do |node|
       title = node.css("h3 a").text.strip
+      title = ZhConv.convert("zh-tw", title)
       note = Note.select("id").find_by_title(title)
       note = parse_note(node,nil) unless note
+      next unless note
       best = NewNote.new
       best.note_id = note.id
       best.order = order
@@ -474,6 +486,7 @@ class TravelCrawler
     end
 
     a_node = @page_html.css(".new-paging em.current")[0]
+    return unless a_node
     if a_node.next.name == "a"
       CrawlNewNoteWorker.perform_async(order,a_node.next[:href])
     end
@@ -481,10 +494,13 @@ class TravelCrawler
 
   def crawl_most_view_note order
     nodes = @page_html.css(".forum-item")
+    raise "error crawl agian " if nodes.blank?
     nodes.each do |node|
       title = node.css("h3 a").text.strip
+      title = ZhConv.convert("zh-tw", title)
       note = Note.select("id").find_by_title(title)
       note = parse_note(node,nil) unless note
+      next unless note
       best = MostViewNote.new
       best.note_id = note.id
       best.order = order
@@ -493,6 +509,7 @@ class TravelCrawler
     end
 
     a_node = @page_html.css(".new-paging em.current")[0]
+    return unless a_node
     if a_node.next.name == "a"
       CrawlMostViewNoteWorker.perform_async(order,a_node.next[:href])
     end
@@ -518,6 +535,7 @@ class TravelCrawler
       c1 = TravelCrawler.new
       c1.fetch node.css("h3 a")[0][:href]
       node = c1.page_html.css("#journal-content")[0]
+      return nil unless node
       img_nodes = node.css("img")
       img_nodes.each do |img_node|
         img_node.set_attribute("width","100%")
@@ -542,7 +560,6 @@ class TravelCrawler
       note.content = content
       note.order_best = order
       note.link = link
-      order += 1
       note.save
       
       if(area_id != nil)
@@ -558,6 +575,10 @@ class TravelCrawler
 
       return note
     else
+      if (order)
+        note.order_best = order
+        note.save
+      end
       if(area_id != nil && AreaNoteRelation.where("note_id = #{note.id} and area_id = #{area_id}").blank?)
         area = Area.select("id, nation_id").find(area_id)
         nation = Nation.select("id, nation_group_id").find(area.nation_id)
