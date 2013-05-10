@@ -14,8 +14,8 @@ set :deploy_to, "/home/apps/travel"
 set :deploy_via, :remote_cache
 set :use_sudo, false
 
-role :web, "106.187.103.107"
-role :app, "106.187.103.107"
+role :web, "106.187.103.107","106.187.92.115"
+role :app, "106.187.103.107","106.187.92.115"
 role :db,  "106.187.103.107", :primary => true
 
 
