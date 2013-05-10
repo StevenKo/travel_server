@@ -1,5 +1,4 @@
 class Api::V1::NotesController < Api::ApiController
-  caches_page :aboard_hot
 
   def index
     area_id = params[:area_id]

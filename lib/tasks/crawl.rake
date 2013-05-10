@@ -136,4 +136,16 @@ namespace :crawl do
     CrawlMostViewNoteWorker.perform_async(1,"/journals.aspx?type=0&dname=&title=&tag=0&tagn=&author=&group=0&orderby=r")
   end
 
+  task :creat_aboard_hot => :environment do
+    (1..20).each do |page|
+      notes = AreaNoteRelation.joins(:note).where("area_note_relations.nation_group_id in (15,16,17,19,20,25,26,27,28,29,30,31,32,33,34,35)").select("notes.id, notes.order_best").paginate(:page => page, :per_page => 20).order("order_best ASC")
+      notes.each do |note|
+        hot = AbordHotNotes.new
+        hot.note_id = note.id
+        hot.order = note.order_best
+        hot.save
+      end
+    end
+  end
+
 end
