@@ -533,7 +533,7 @@ class TravelCrawler
       # change content html ###
       
       c1 = TravelCrawler.new
-      c1.fetch node.css("h3 a")[0][:href]
+      c1.fetch node.css("h3 > a")[0][:href]
       node = c1.page_html.css("#journal-content")[0]
       return nil unless node
       img_nodes = node.css("img")
