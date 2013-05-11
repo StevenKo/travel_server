@@ -32,6 +32,7 @@ class Api::V1::NotesController < Api::ApiController
 
   def aboard_hot
     notes = AbordHotNotes.joins(:note).select("notes.id, notes.title, notes.author,notes.date,notes.pic,notes.read_num").paginate(:page => params[:page], :per_page => 20).order("id ASC")
+    notes = unique_relation_notes(notes)
     render :json => notes
   end
 
